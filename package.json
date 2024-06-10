@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "google-play-scraper": "^10.0.0",
+    "googletrans": "^1.0.4",
+    "matplotlib": "^1.0.0",
+    "pandas": "^0.0.3"
+  }
+}
