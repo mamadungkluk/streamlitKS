@@ -62,7 +62,14 @@ def likert_label(score):
 
 def translate_reviews(reviews, target_lang='en'):
     translator = Translator()
-    translated_reviews = [translator.translate(review, dest=target_lang).text for review in reviews]
+    translated_reviews = []
+    for review in reviews:
+        try:
+            translated_review = translator.translate(review, dest=target_lang).text
+            translated_reviews.append(translated_review)
+        except Exception as e:
+            translated_reviews.append("Translation Error")
+            print(f"Error translating review: {review}\nError: {e}")
     return translated_reviews
 
 def main():
@@ -74,10 +81,17 @@ def main():
         reviews_content = scrape_reviews_batched(app_id)
         normalized_reviews_content = [normalize_text(review) for review in reviews_content]
 
-        keywords = ['penggunaannya', 'penggunaan', 'memudahkan', 'pengguna', 'informasi', 'sistem informasi', 'dapat memudahkan pengguna', 'sistem']
-        filter_reviews = st.radio("Filter Ulasan", ("y", "n")).lower() == 'y'
+        keywords = [
+            'sistem', 'informasi', 'cepat', 'waktu', 'data', 'perintah', 'dilakukan', 'merespon', 'merespons', 
+            'sistem informasi', 'menghasilkan informasi', 'kinerja sistem', 'perintah pembatalan', 'mudah diakses', 
+            'sejumlah perintah', 'informasi tetap', 'dilakukan dengan cepat', 'waktu yang dibutuhkan', 
+            'cepat merespon perintah', 'Sistem informasi perpustakaan', 'sistem informasi akuntansi', 
+            'kinerja sistem informasi', 'diproses sistem informasi', 'fungsi sistem informasi'
+        ]
+        filter_reviews = st.radio("Filter Ulasan", ("Yes", "No"))
 
-        if filter_reviews:
+        if filter_reviews == "Yes":
+            st.write("Filtering reviews...")
             reviews_with_keywords = filter_reviews_by_keywords(normalized_reviews_content, keywords)
 
             # Translate reviews
@@ -97,14 +111,14 @@ def main():
                 "Sentiment Label": [likert_label(score) for score in likert_scale]
             })
 
-            # Calculate average sentiment score
-            avg_sentiment_score = df_reviews_with_keywords["Sentiment Score"].mean()
+            # Calculate average likert scale
+            avg_likert_scale = df_reviews_with_keywords["Likert Scale"].mean()
 
             st.markdown("## Reviews containing keywords:")
             st.dataframe(df_reviews_with_keywords)
 
-            # Display the average sentiment score
-            st.markdown(f"## Skor Sentimen Rata-rata: {avg_sentiment_score:.2f}")
+            # Display the average likert scale
+            st.markdown(f"## Skor Skala Likert Rata-rata: {avg_likert_scale:.2f}")
 
             # Calculate the counts for each sentiment label
             sentiment_counts = df_reviews_with_keywords["Sentiment Label"].value_counts().to_dict()
@@ -121,6 +135,9 @@ def main():
             plt.xlabel('Sentiment Label')
             plt.ylabel('Number of Reviews')
             st.pyplot(plt)
+        else:
+            st.write("Showing all reviews...")
+            # You can add code here to display or analyze all reviews if needed.
 
 if __name__ == "__main__":
     main()
